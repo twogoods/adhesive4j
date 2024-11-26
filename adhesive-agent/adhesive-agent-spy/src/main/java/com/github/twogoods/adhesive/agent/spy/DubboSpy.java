@@ -9,45 +9,29 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DubboSpy {
     public static Map<ClassLoader, DubboAdhesiveInvoker> dubboAdhesiveInvokers = new ConcurrentHashMap<>();
+    public static Map<String, ClassLoader> providers = new ConcurrentHashMap<>();
 
     public static void registerInvoker(ClassLoader classLoader, DubboAdhesiveInvoker invoker) {
-        System.out.println("--------------DubboSpy registerInvoker--------------");
         dubboAdhesiveInvokers.put(classLoader, invoker);
     }
 
-    public static void updateInvoker(ClassLoader classLoader, Object object) {
+    public static void updateInvoker(ClassLoader classLoader, String iface, Object object) {
+        providers.put(iface, classLoader);
         DubboAdhesiveInvoker invoker = dubboAdhesiveInvokers.get(classLoader);
         if (invoker != null) {
             invoker.update(object);
         }
     }
 
-    public static boolean invokerExist(ClassLoader classLoader) {
-        return dubboAdhesiveInvokers.containsKey(classLoader);
+    public static boolean hasProvider(String iface) {
+        return providers.containsKey(iface);
     }
 
-
-    public static ClassLoader anotherClassloader(ClassLoader classLoader) {
-        for (Map.Entry<ClassLoader, DubboAdhesiveInvoker> entry : dubboAdhesiveInvokers.entrySet()) {
-            if (!entry.getKey().equals(classLoader)) {
-                return entry.getKey();
-            }
-        }
-
-        return classLoader;
-    }
-
-
-    public static Object invoke(ClassLoader classLoader, String iface, String methodName, Object[] args) throws Exception {
-        DubboAdhesiveInvoker invoker = null;
-        for (Map.Entry entry : dubboAdhesiveInvokers.entrySet()) {
-            if (!entry.getKey().equals(classLoader)) {
-                invoker = (DubboAdhesiveInvoker) entry.getValue();
-                break;
-            }
-        }
+    public static Object invoke(ClassLoader callerCl, String iface, String methodName, Object[] args) throws Throwable {
+        ClassLoader providerCl = providers.get(iface);
+        DubboAdhesiveInvoker invoker = dubboAdhesiveInvokers.get(providerCl);
         if (invoker != null) {
-            return invoker.inboundInvoke(iface, methodName, args);
+            return invoker.invoke(callerCl, providerCl, iface, methodName, args);
         }
         throw new RuntimeException("no invoker found");
     }

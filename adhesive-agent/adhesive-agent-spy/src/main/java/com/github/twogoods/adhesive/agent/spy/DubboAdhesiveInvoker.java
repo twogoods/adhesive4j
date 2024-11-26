@@ -10,5 +10,5 @@ public interface DubboAdhesiveInvoker {
 
     void update(Object dubbo);
 
-    Object inboundInvoke(String iface, String methodName, Object[] args) throws Exception;
+    Object invoke(ClassLoader callerCl, ClassLoader providerCl, String iface, String methodName, Object[] args) throws Throwable;
 }
