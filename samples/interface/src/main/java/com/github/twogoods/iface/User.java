@@ -1,12 +1,10 @@
 package com.github.twogoods.iface;
 
-import java.io.Serializable;
-
 /**
  * @author twogoods
  * @since 2024/9/11
  */
-public class User implements Serializable {
+public class User {
     private String name;
     private int age;
 
@@ -29,5 +27,13 @@ public class User implements Serializable {
 
     public void setAge(int age) {
         this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                '}';
     }
 }

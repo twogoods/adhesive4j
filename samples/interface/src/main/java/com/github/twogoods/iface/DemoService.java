@@ -6,4 +6,8 @@ package com.github.twogoods.iface;
  */
 public interface DemoService {
     String sayHello(User user);
+
+    User renew(User user);
+
+    String error(User user) throws Throwable;
 }

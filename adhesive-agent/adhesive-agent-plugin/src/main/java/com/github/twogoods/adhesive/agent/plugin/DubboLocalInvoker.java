@@ -5,7 +5,6 @@ import com.github.twogoods.adhesive.agent.spy.DubboAdhesiveInvoker;
 import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
-import java.lang.reflect.Constructor;
 import java.util.HashMap;
 
 /**
@@ -47,7 +46,7 @@ public class DubboLocalInvoker implements DubboAdhesiveInvoker {
             throw new Exception("iface not exist");
         }
 
-        Object[] params = convertParams(callerCl, providerCl, args);
+        Object[] params = convertParams(providerCl, args);
         Class[] paramType = new Class[params.length];
         for (int i = 0; i < params.length; i++) {
             paramType[i] = params[i].getClass();
@@ -57,41 +56,42 @@ public class DubboLocalInvoker implements DubboAdhesiveInvoker {
         Result res = invoker.invoke(invocation);
         if (res.getException() != null) {
             res.getException().printStackTrace();
-            throw convertException(callerCl, providerCl, res.getException());
+            throw convertException(callerCl, res.getException());
         } else {
             System.out.println("result---" + res.getValue());
-            return convertResult(callerCl, providerCl, res.getValue());
+            return convertObj(callerCl, res.getValue());
         }
     }
 
-    private Object[] convertParams(ClassLoader callerCl, ClassLoader providerCl, Object[] args) {
-        //TODO 不同classloader下的pojo转换，直接走一下序列化
-        try {
-            Class clazz = providerCl.loadClass("com.github.twogoods.iface.User");
-            Constructor constructor = clazz.getConstructor(String.class, int.class);
-            Object param = constructor.newInstance("d-t", 1212);
-            return new Object[]{param};
-        } catch (Exception e) {
-            e.printStackTrace();
+    private Object[] convertParams(ClassLoader cl, Object[] args) throws Exception {
+        Object[] params = new Object[args.length];
+        for (int i = 0; i < args.length; i++) {
+            params[i] = convertObj(cl, args[i]);
         }
-        return args;
+        return params;
     }
 
-    private Object convertResult(ClassLoader callerCl, ClassLoader providerCl, Object res) {
+    private Object convertObj(ClassLoader cl, Object res) throws Exception {
         if (res.getClass().getClassLoader() == null) {
             return res;
         } else {
-            //TODO 不同classloader下的pojo转换，直接走一下序列化
+            byte[] bytes = SerializationUtils.serialize(res);
+            return SerializationUtils.deserialize(bytes, type(cl, res.getClass()));
         }
-        return res;
     }
 
-    private Throwable convertException(ClassLoader callerCl, ClassLoader providerCl, Throwable throwable) {
+    private Throwable convertException(ClassLoader cl, Throwable throwable) throws Exception {
         if (throwable.getClass().getClassLoader() == null) {
             return throwable;
         } else {
-            //TODO 不同classloader下的pojo转换，直接走一下序列化
+            RpcException rpcException = new RpcException(throwable.getMessage(), throwable);
+            return rpcException;
+//            byte[] bytes = SerializationUtils.serialize(throwable);
+//            return (Throwable) SerializationUtils.deserialize(bytes, type(cl, throwable.getClass()));
         }
-        return throwable;
+    }
+
+    private Class type(ClassLoader cl, Class clazz) throws ClassNotFoundException {
+        return cl.loadClass(clazz.getName());
     }
 }

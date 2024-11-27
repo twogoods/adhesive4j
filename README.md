@@ -1,6 +1,11 @@
-dubbo 源码
-https://cn.dubbo.apache.org/zh-cn/docsv2.7/dev/source/service-invoking-process/
-https://juejin.cn/post/7165032712640659493
+# adhesive4j
+作为java应用的粘合剂解决微服务过微的问题，利用javaagent实现服务合并，将已有的多个应用程序运行在一个进程内，让原本两个应用间的远程调用变成进程内的本地调用。
+- 利用类隔离技术实现多个应用的共同运行
+- 利用javaagent实现相关的调用拦截，无需修改任何代码，多个jar合并运行
 
-export dubbo服务的时候走的DubboProtocol 里面有所有服务提供者的invoker 调用时直接调invoker即可
-发起请求处代理到InvokerInvocationHandler 最终来到DubboInvoker 
+## 目标
+支持以下协议
+- http
+- dubbo
+
+目前实验性的走完了dubbo进程内调用的poc验证

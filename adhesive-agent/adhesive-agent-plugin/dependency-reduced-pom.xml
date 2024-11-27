@@ -90,10 +90,6 @@
           <artifactId>hessian-lite</artifactId>
           <groupId>com.alibaba</groupId>
         </exclusion>
-        <exclusion>
-          <artifactId>fastjson2</artifactId>
-          <groupId>com.alibaba.fastjson2</groupId>
-        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -111,6 +107,7 @@
     </dependency>
   </dependencies>
   <properties>
+    <fastjson2.version>2.0.53</fastjson2.version>
     <dubbo.version>3.2.15</dubbo.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>8</maven.compiler.source>

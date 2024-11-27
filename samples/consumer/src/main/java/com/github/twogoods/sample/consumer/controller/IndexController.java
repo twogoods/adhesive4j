@@ -25,4 +25,15 @@ public class IndexController {
     public String dubbo() {
         return demoService.sayHello(new User("test", 1));
     }
+
+    @RequestMapping(value = "/dubbo2")
+    public String dubbo2() {
+        User user = demoService.renew(new User("test", 1));
+        return user.toString();
+    }
+
+    @RequestMapping(value = "/dubbo3")
+    public String dubbo3() throws Throwable {
+        return demoService.error(new User("test", 1));
+    }
 }
