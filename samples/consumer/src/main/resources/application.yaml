@@ -3,13 +3,3 @@ server:
 spring:
   application:
     name: demo-consumer
-dubbo:
-  application:
-    name: demo-consumer
-    qos-enable: false
-  protocol:
-    name: dubbo
-    port: -1
-  registry:
-    id: zk-registry
-    address: zookeeper://127.0.0.1:2181

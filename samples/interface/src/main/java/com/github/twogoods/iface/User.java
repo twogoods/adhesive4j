@@ -1,14 +1,19 @@
 package com.github.twogoods.iface;
 
+import java.io.Serializable;
+
 /**
  * @author twogoods
  * @since 2024/9/11
  */
-public class User {
+public class User implements Serializable {
     private String name;
     private int age;
 
-    public User(String name, int age) {
+    public User() {
+    }
+
+    public User(String name, Integer age) {
         this.name = name;
         this.age = age;
     }

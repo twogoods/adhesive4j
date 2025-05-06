@@ -6,6 +6,10 @@ import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.servlet.AdhesiveServlet;
+import org.springframework.web.servlet.DispatcherServlet;
 
 import java.util.HashMap;
 
@@ -14,7 +18,7 @@ import java.util.HashMap;
  * @since 2024/9/11
  */
 @SpringBootApplication
-@EnableDubbo(scanBasePackages = {"com.github.twogoods.sample.provider"})
+@EnableDiscoveryClient
 public class ProviderApp {
 
     public static void call() {
@@ -34,6 +38,10 @@ public class ProviderApp {
         });
     }
 
+    @Bean
+    public AdhesiveServlet adhesiveServlet(DispatcherServlet dispatcherServlet) {
+        return new AdhesiveServlet(dispatcherServlet);
+    }
 
     public static void main(String[] args) throws InterruptedException {
         SpringApplication.run(ProviderApp.class, args);

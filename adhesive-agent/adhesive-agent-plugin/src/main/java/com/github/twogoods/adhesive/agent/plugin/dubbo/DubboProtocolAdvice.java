@@ -1,6 +1,6 @@
-package com.github.twogoods.adhesive.agent.plugin;
+package com.github.twogoods.adhesive.agent.plugin.dubbo;
 
-import com.github.twogoods.adhesive.agent.spy.DubboSpy;
+import com.github.twogoods.adhesive.agent.spy.dubbo.DubboSpy;
 import net.bytebuddy.asm.Advice;
 import org.apache.dubbo.rpc.Invoker;
 

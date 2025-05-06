@@ -1,4 +1,4 @@
-package com.github.twogoods.adhesive.agent.plugin;
+package com.github.twogoods.adhesive.agent.plugin.dubbo;
 
 import com.alibaba.fastjson2.JSONB;
 

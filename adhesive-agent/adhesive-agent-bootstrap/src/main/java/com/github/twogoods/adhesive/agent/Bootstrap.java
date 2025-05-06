@@ -79,6 +79,20 @@ public class Bootstrap {
                 .transform(new OutboundTransformer())
                 .installOn(inst);
 
+        ResettableClassFileTransformer httpInboundTransformer = agentBuilder.type(
+                        ElementMatchers.<TypeDescription>namedOneOf("org.springframework.web.servlet.FrameworkServlet"))
+                .transform(new HttpInboundTransformer())
+                .installOn(inst);
+
+        ResettableClassFileTransformer httpOutboundTransformer = agentBuilder.type(
+                        ElementMatchers.<TypeDescription>namedOneOf("org.springframework.http.client.AbstractClientHttpRequest"))
+                .transform(new HttpOutboundTransformer())
+                .installOn(inst);
+
+        ResettableClassFileTransformer loadOnStartupTransformer = agentBuilder.type(
+                        ElementMatchers.<TypeDescription>namedOneOf("org.springframework.boot.autoconfigure.web.servlet.WebMvcProperties$Servlet"))
+                .transform(new LoadOnStartupTransformer())
+                .installOn(inst);
     }
 
     public static void agentmain(String agentArgs, Instrumentation instrumentation) throws Exception {
@@ -111,9 +125,14 @@ public class Bootstrap {
             try {
                 URL url = new File("adhesive-agent/adhesive-agent-plugin/target/adhesive-agent-plugin-0.0.1.jar").toURL();
                 URLClassLoader loader = new URLClassLoader(new URL[]{url}, cl);
-                Class clazz = loader.loadClass("com.github.twogoods.adhesive.agent.plugin.DubboLocalInvoker");
+                Class clazz = loader.loadClass("com.github.twogoods.adhesive.agent.plugin.dubbo.DubboLocalInvoker");
                 Method method = clazz.getDeclaredMethod("regist", ClassLoader.class);
                 method.invoke(null, cl);
+
+                clazz = loader.loadClass("com.github.twogoods.adhesive.agent.plugin.rest.HttpLocalInvoker");
+                method = clazz.getDeclaredMethod("regist", ClassLoader.class);
+                method.invoke(null, cl);
+
                 return loader;
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -127,7 +146,7 @@ public class Bootstrap {
         public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule module, ProtectionDomain protectionDomain) {
             System.out.println(typeDescription.getCanonicalName() + " Transformer....");
             try {
-                Class clazz = getAdviceLoader(classLoader).loadClass("com.github.twogoods.adhesive.agent.plugin.DubboProtocolAdvice");
+                Class clazz = getAdviceLoader(classLoader).loadClass("com.github.twogoods.adhesive.agent.plugin.dubbo.DubboProtocolAdvice");
                 return builder.visit(Advice.to(clazz).on(ElementMatchers.named("export").and(takesArguments(1))));
             } catch (Exception e) {
                 e.printStackTrace();
@@ -141,8 +160,50 @@ public class Bootstrap {
         public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule module, ProtectionDomain protectionDomain) {
             System.out.println(typeDescription.getCanonicalName() + " Transformer....");
             try {
-                Class clazz = getAdviceLoader(classLoader).loadClass("com.github.twogoods.adhesive.agent.plugin.DubboInvokerAdvice");
+                Class clazz = getAdviceLoader(classLoader).loadClass("com.github.twogoods.adhesive.agent.plugin.dubbo.DubboInvokerAdvice");
                 return builder.visit(Advice.to(clazz).on(ElementMatchers.named("doInvoke")));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return builder;
+        }
+    }
+
+    static class HttpInboundTransformer implements AgentBuilder.Transformer {
+        @Override
+        public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule module, ProtectionDomain protectionDomain) {
+            System.out.println(typeDescription.getCanonicalName() + " Transformer....");
+            try {
+                Class clazz = getAdviceLoader(classLoader).loadClass("com.github.twogoods.adhesive.agent.plugin.springmvc.DispatcherServletAdvice");
+                return builder.visit(Advice.to(clazz).on(ElementMatchers.named("setDispatchOptionsRequest").and(takesArguments(1))));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return builder;
+        }
+    }
+
+    static class HttpOutboundTransformer implements AgentBuilder.Transformer {
+        @Override
+        public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule module, ProtectionDomain protectionDomain) {
+            System.out.println(typeDescription.getCanonicalName() + " Transformer....");
+            try {
+                Class clazz = getAdviceLoader(classLoader).loadClass("com.github.twogoods.adhesive.agent.plugin.rest.ClientHttpRequestAdvice");
+                return builder.visit(Advice.to(clazz).on(ElementMatchers.named("execute")));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return builder;
+        }
+    }
+
+    static class LoadOnStartupTransformer implements AgentBuilder.Transformer {
+        @Override
+        public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule module, ProtectionDomain protectionDomain) {
+            System.out.println(typeDescription.getCanonicalName() + " Transformer....");
+            try {
+                Class clazz = getAdviceLoader(classLoader).loadClass("com.github.twogoods.adhesive.agent.plugin.springmvc.LoadOnStartupAdvice");
+                return builder.visit(Advice.to(clazz).on(ElementMatchers.named("getLoadOnStartup")));
             } catch (Exception e) {
                 e.printStackTrace();
             }

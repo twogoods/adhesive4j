@@ -1,4 +1,4 @@
-package com.github.twogoods.adhesive.agent.spy;
+package com.github.twogoods.adhesive.agent.spy.dubbo;
 
 /**
  * @author twogoods
